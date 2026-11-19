@@ -1,0 +1,1311 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SNT · Séance 2 · Le programme prend des décisions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Fraunces:opsz,wght@9..144,600;9..144,800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#f6f3ec; --card:#fffdf8; --ink:#1d1b16; --ink2:#5b5648; --line:#e2dccd;
+  --accent:#2546d6; --accent-soft:#e6eafc; --bonus:#b4561d; --bonus-soft:#fbeadf;
+  --g:#2f8f5b; --o:#d9822b; --r:#c8402f; --ok:#2f8f5b; --err:#c8402f;
+  --code-bg:#1f2130; --code-ink:#e9e7f2;
+  --mono:'JetBrains Mono',ui-monospace,Consolas,monospace;
+  --sans:'Atkinson Hyperlegible',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --serif:'Fraunces',Georgia,serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.6 var(--sans)}
+a{color:var(--accent)}
+code{font-family:var(--mono);font-size:.88em;background:#ece7da;padding:.08em .35em;border-radius:4px}
+pre.ex-code{font-family:var(--mono);font-size:14px;background:#ece7da;padding:10px 14px;border-radius:8px;overflow-x:auto;line-height:1.5;margin:10px 0}
+
+/* ---------- En-tête ---------- */
+header.top{background:var(--ink);color:#f6f3ec;padding:22px 16px 0;position:relative;overflow:hidden}
+.wrap{max-width:900px;margin:0 auto;padding:0 16px}
+header.top .wrap{padding:0;position:relative}
+.kicker{font-size:13px;letter-spacing:.12em;text-transform:uppercase;opacity:.7}
+h1{font-family:var(--serif);font-weight:800;font-size:clamp(28px,5vw,42px);line-height:1.1;margin:.2em 0 .3em}
+.headart{position:absolute;right:-6px;top:-8px;width:150px;height:150px;opacity:.5;pointer-events:none}
+@media (max-width:700px){.headart{display:none}}
+.pystatus{display:inline-flex;align-items:center;gap:8px;font-size:14px;background:#ffffff14;border-radius:99px;padding:4px 12px;margin-bottom:16px}
+.pystatus i{width:9px;height:9px;border-radius:50%;background:#d9a52b;display:inline-block}
+.pystatus.ready i{background:#4cc27f}.pystatus.fail i{background:#e8664f}
+nav.tabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;position:relative}
+nav.tabs::-webkit-scrollbar{display:none}
+nav.tabs button{font:inherit;font-size:15px;color:#f6f3ecc0;background:transparent;border:0;padding:10px 14px;border-radius:10px 10px 0 0;cursor:pointer;white-space:nowrap}
+nav.tabs button:hover{color:#fff;background:#ffffff10}
+nav.tabs button[aria-selected=true]{background:var(--paper);color:var(--ink);font-weight:700}
+nav.tabs .badge{font-size:12px;margin-left:6px;padding:1px 7px;border-radius:99px;background:#ffffff22}
+nav.tabs button[aria-selected=true] .badge{background:var(--accent-soft);color:var(--accent)}
+nav.tabs button.bonus[aria-selected=true] .badge{background:var(--bonus-soft);color:var(--bonus)}
+
+main{padding:28px 0 80px}
+section.panel{display:none}
+section.panel.active{display:block}
+h2{font-family:var(--serif);font-weight:800;font-size:28px;line-height:1.2;margin:42px 0 10px}
+h2:first-child{margin-top:0}
+h3{font-size:19px;margin:0 0 6px}
+.lead{font-size:19px;color:var(--ink2)}
+.box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin:16px 0}
+.box.info{border-left:5px solid var(--accent)}
+.box.warn{border-left:5px solid var(--o)}
+.box.bonus{border-left:5px solid var(--bonus);background:var(--bonus-soft)}
+.box.art{border-left:5px solid var(--ink)}
+table{border-collapse:collapse;width:100%;margin:10px 0;background:var(--card);border-radius:10px;overflow:hidden;font-size:16px}
+th,td{border-bottom:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+th{background:#efeadf}
+.tblwrap{overflow-x:auto}
+
+/* niveaux */
+.lvl{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:2px 9px;border-radius:99px;color:#fff;vertical-align:middle;margin-right:6px}
+.lvl.g{background:var(--g)}.lvl.o{background:var(--o)}.lvl.r{background:var(--r)}.lvl.k{background:var(--ink)}
+
+/* exercices */
+article.ex{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 20px 20px;margin:22px 0;position:relative}
+article.ex .exhead{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:6px}
+.state{font-size:13px;font-weight:700;border-radius:99px;padding:2px 10px;background:#eee8da;color:var(--ink2)}
+.state.ok{background:#dff1e6;color:var(--ok)}.state.err{background:#f7e0dc;color:var(--err)}.state.stale{background:#fbeedb;color:#a5601b}
+details{margin:10px 0;background:#f3efe4;border-radius:10px;padding:8px 14px}
+details summary{cursor:pointer;font-weight:700;color:var(--ink2)}
+.note-field{display:block;margin-top:12px}
+.note-field span{display:block;font-weight:700;font-size:15px;margin-bottom:4px}
+.note-field textarea,.idgrid input,.bilan textarea{width:100%;font:inherit;font-size:16px;padding:9px 12px;border:1.5px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);resize:vertical}
+.note-field textarea:focus,.idgrid input:focus,.bilan textarea:focus{outline:none;border-color:var(--accent)}
+.note-field textarea{min-height:46px}
+.bilan textarea{min-height:120px}
+
+/* cellule de code */
+.cell{margin-top:12px;border-radius:12px;overflow:hidden;background:var(--code-bg);box-shadow:0 1px 0 #0000000d}
+.cell.demo{margin:14px 0 20px}
+.cellbar{display:flex;align-items:center;gap:8px;padding:8px 10px;background:#2a2d40;flex-wrap:wrap}
+.cellbar .tag{font-size:12px;color:#a9a6c4;margin-right:auto;font-family:var(--mono)}
+.btn{font:inherit;font-size:15px;font-weight:700;border:0;border-radius:9px;padding:6px 14px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.btn.run{background:#4cc27f;color:#0d2a1a}
+.btn.run:hover{background:#62d593}
+.btn.ghost{background:transparent;color:#cfcce4;border:1px solid #4a4d66;font-weight:400}
+.btn.ghost:hover{background:#ffffff10}
+.btn.from{background:#33375a;color:#dfe4ff;border:1px solid #6f84ff;font-weight:400}
+.btn.from:hover{background:#3d4270}
+.btn.stop{background:#e8664f;color:#fff}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn[hidden]{display:none}
+.editor{position:relative;background:var(--code-bg)}
+.editor pre,.editor textarea{margin:0;padding:14px 16px;font:14.5px/1.6 var(--mono);white-space:pre-wrap;overflow-wrap:anywhere;word-break:normal;tab-size:4;-moz-tab-size:4;letter-spacing:0;border:0;width:100%;min-height:72px}
+.editor pre{color:var(--code-ink);pointer-events:none}
+.editor textarea{position:absolute;inset:0;height:100%;color:transparent;background:transparent;caret-color:#fff;resize:none;overflow:hidden;outline:none}
+.editor textarea::placeholder{color:#7d7a99}
+.editor textarea::selection{background:#4f5bd566;color:transparent}
+.editor:focus-within{box-shadow:inset 0 0 0 2px #6f84ff}
+.tk-kw{color:#ff9ac1;font-weight:600}.tk-bi{color:#7cc7ff}.tk-str{color:#b6e3a1}.tk-num{color:#ffc27a}.tk-com{color:#8e8bab;font-style:italic}
+.out{margin:0;padding:12px 16px;background:#11131d;color:#e9e7f2;font:14px/1.55 var(--mono);white-space:pre-wrap;overflow-wrap:anywhere;max-height:420px;overflow-y:auto;border-top:1px solid #33364a}
+.out:empty{display:none}
+.out .k-err{color:#ff9d8a}.out .k-sys{color:#8e8bab;font-style:italic}.out .k-in{color:#7cc7ff;font-weight:600}
+.out .hint{display:block;margin-top:8px;padding:8px 12px;border-radius:8px;background:#2b2230;color:#ffd7a8;font-family:var(--sans);font-size:15px;white-space:normal}
+.out .hint code{background:#4a3a52;color:#ffffff;font-weight:600}
+.out .hint b{color:#ffffff}
+.out input.inp{font:inherit;color:#7cc7ff;background:#1f2235;border:1px solid #6f84ff;border-radius:6px;padding:1px 8px;min-width:14ch;outline:none}
+
+/* cas à tester & essais */
+.essais{display:flex;flex-direction:column;gap:10px;padding:14px 16px;background:#ebe6d9;border-top:1px solid #33364a}
+.essais[hidden]{display:none}
+.tests{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:14.5px;color:var(--ink2)}
+.tests b{color:var(--ink);margin-right:4px}
+.chip{font-family:var(--mono);font-size:13.5px;background:#fff;border:1.5px dashed #b9b19c;border-radius:99px;padding:1px 10px;color:var(--ink2)}
+.chip.ok{border-style:solid;border-color:var(--ok);background:#dff1e6;color:var(--ok);font-weight:600}
+.chip.ok::before{content:"✓ "}
+.histlabel{font-size:14px;font-weight:700;color:var(--ink2)}
+.hist{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.hist:empty{display:none}
+.essai{background:#11131d;border-radius:8px;overflow:hidden;box-shadow:0 1px 2px #0003}
+.essai .eh{display:flex;justify-content:space-between;align-items:center;gap:6px;font-size:12.5px;color:#a9a6c4;background:#2a2d40;padding:3px 4px 3px 10px}
+.essai .eh .bad{color:#ff9d8a;font-weight:700}
+.essai .eh .good{color:#7fdca3;font-weight:700}
+.essai .eh button{border:0;background:none;color:#a9a6c4;cursor:pointer;font-size:13px;padding:2px 7px;border-radius:5px}
+.essai .eh button:hover{background:#ffffff14;color:#fff}
+.essai pre{margin:0;padding:8px 10px;color:#e9e7f2;font:12.5px/1.45 var(--mono);white-space:pre-wrap;overflow-wrap:anywhere;max-height:170px;overflow-y:auto}
+.essai .k-in{color:#7cc7ff;font-weight:600}.essai .k-err{color:#ff9d8a}
+
+/* prédictions True / False */
+.quiz{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.qi{display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 12px}
+.qexpr code{font-size:15px}
+.qctx{font-size:14px;color:var(--ink2);margin-right:8px}
+.qbtns{display:flex;gap:6px}
+.qbtns button{font:600 14px var(--mono);border:1.5px solid var(--line);background:#faf8f2;border-radius:8px;padding:4px 12px;cursor:pointer;color:var(--ink)}
+.qbtns button:hover{border-color:var(--ink2)}
+.qbtns button.sel.good{background:#dff1e6;border-color:var(--ok);color:var(--ok)}
+.qbtns button.sel.bad{background:#f7e0dc;border-color:var(--err);color:var(--err)}
+.qfb{grid-column:1/-1;font-size:15px}
+.qfb:empty{display:none}
+.qfb.good{color:var(--ok)}.qfb.bad{color:var(--err)}
+.qscore{font-weight:700;color:var(--ink2);font-size:15px;margin-top:2px}
+
+.bigbtn{font:inherit;font-weight:700;font-size:17px;border:0;border-radius:12px;padding:12px 22px;cursor:pointer;background:var(--accent);color:#fff}
+.bigbtn:hover{filter:brightness(1.1)}
+.bigbtn.bonusbtn{background:var(--bonus)}
+.smallbtn{font:inherit;font-size:15px;border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:7px 14px;cursor:pointer;color:var(--ink)}
+.smallbtn:hover{border-color:var(--ink2)}
+.msg{font-weight:700;margin-left:10px}
+.msg.bad{color:var(--err)}
+
+/* accueil / rendu */
+.idgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.idgrid label span{display:block;font-weight:700;font-size:15px;margin-bottom:4px}
+.steps{counter-reset:s;list-style:none;padding:0;margin:0}
+.steps li{counter-increment:s;position:relative;padding:4px 0 10px 44px}
+.steps li::before{content:counter(s);position:absolute;left:0;top:2px;width:30px;height:30px;border-radius:50%;background:var(--accent);color:#fff;font-weight:700;display:grid;place-items:center;font-size:15px}
+kbd{font-family:var(--mono);font-size:.85em;background:#fff;border:1px solid #cfc8b6;border-bottom-width:2px;border-radius:5px;padding:0 6px}
+.check{list-style:none;padding:0;margin:0}
+.check li{padding:6px 0 6px 32px;position:relative;border-bottom:1px solid var(--line)}
+.check li:last-child{border:0}
+.check li::before{content:"○";position:absolute;left:6px;color:var(--ink2);font-weight:700}
+.check li.yes::before{content:"✓";color:var(--ok)}
+.check li.opt::before{content:"★";color:var(--bonus)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.next{margin-top:30px;display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap}
+footer{color:var(--ink2);font-size:14px;text-align:center;padding:20px 16px 40px}
+@media (max-width:600px){body{font-size:16px}article.ex,.box{padding:14px}h2{font-size:24px}.qi{grid-template-columns:1fr}}
+
+@media print{
+  header.top nav,.cellbar,.bigbtn,.smallbtn,.next,.pystatus,footer,.noprint,.headart,.essai .eh button{display:none!important}
+  header.top{background:#fff;color:#000;padding:0}
+  section.panel{display:block!important}
+  body{background:#fff}
+  .out,.essai pre{max-height:none;background:#f3f3f3;color:#000}
+  .editor textarea{display:none}
+  .editor pre{color:#000;background:#f7f7f7}
+  .cell{background:#f7f7f7}
+  article.ex{break-inside:avoid}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <svg class="headart" viewBox="0 0 150 150" aria-hidden="true">
+      <g fill="none" stroke="#f6f3ec" stroke-width="1.3">
+        <path d="M75 12 L106 43 L75 74 L44 43Z"/>
+        <path d="M44 43 H25 V90"/><path d="M106 43 H125 V90"/>
+        <rect x="7" y="90" width="36" height="22" rx="3"/><rect x="107" y="90" width="36" height="22" rx="3"/>
+        <path d="M25 112 V130 H125 V112 M75 130 V148"/>
+      </g>
+      <g fill="#f6f3ec" font-family="sans-serif" font-size="11"><text x="69" y="47">if</text><text x="18" y="37">oui</text><text x="114" y="37">non</text></g>
+    </svg>
+    <div class="kicker">SNT · Seconde · ESAAT Roubaix · Séance 2</div>
+    <h1>Le programme prend des décisions</h1>
+    <div class="pystatus" id="pystatus" role="status"><i></i><span>Python : chargement…</span></div>
+    <nav class="tabs" role="tablist" aria-label="Parties de la séance">
+      <button role="tab" data-tab="accueil" aria-selected="true">Commencer</button>
+      <button role="tab" data-tab="si" aria-selected="false">1 · Si… sinon <span class="badge" id="b-1">0/0</span></button>
+      <button role="tab" data-tab="elif" aria-selected="false">2 · elif, and, or <span class="badge" id="b-2">0/0</span></button>
+      <button role="tab" data-tab="jeux" aria-selected="false">3 · Hasard &amp; jeux <span class="badge" id="b-3">0/0</span></button>
+      <button role="tab" data-tab="defis" aria-selected="false" class="bonus">★ Défis <span class="badge" id="b-d">0/0</span></button>
+      <button role="tab" data-tab="rendu" aria-selected="false">Rendre mon travail</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+<!-- ===================================================== ACCUEIL -->
+<section class="panel active" id="p-accueil" role="tabpanel">
+  <h2>Bonjour !</h2>
+  <p class="lead">Aujourd'hui, ton programme apprend à <b>prendre des décisions</b> : <em>si</em> quelque chose est vrai, il fait ceci, <em>sinon</em> il fait cela. Tout se passe dans cette page. Tu écris ton code, tu l'exécutes, tu réponds aux questions que pose ton programme, et à la fin tu télécharges un PDF qui rassemble ton travail.</p>
+
+  <div class="box">
+    <h3>Qui es-tu ?</h3>
+    <p style="margin-top:0;color:var(--ink2)">Ces informations apparaîtront sur ton PDF.</p>
+    <div class="idgrid">
+      <label><span>Nom</span><input id="id-nom" autocomplete="family-name"></label>
+      <label><span>Prénom</span><input id="id-prenom" autocomplete="given-name"></label>
+      <label><span>Classe</span><input id="id-classe" placeholder="ex. 2nde 3"></label>
+    </div>
+  </div>
+
+  <div class="box info">
+    <h3>Le programme du jour</h3>
+    <ol class="steps">
+      <li><b>Partie 1 : si… alors… sinon</b> <em>(obligatoire)</em> : <code>if</code>, <code>else</code> et les comparaisons.</li>
+      <li><b>Partie 2 : plusieurs cas</b> <em>(obligatoire)</em> : <code>elif</code>, puis combiner des conditions avec <code>and</code> et <code>or</code>.</li>
+      <li><b>Partie 3 : hasard et mini-jeux</b> <em>(obligatoire)</em> : le module <code>random</code>, le nombre mystère, un quiz, pierre-feuille-ciseaux.</li>
+      <li><b>★ Défis</b> : pour aller plus loin si tu as fini.</li>
+      <li><b>Rendre mon travail</b> : tu télécharges le PDF et tu le déposes sur l'ENT (ou tu l'envoies par mail à ton professeur).</li>
+    </ol>
+  </div>
+
+  <div class="box">
+    <h3>Comment ça marche ?</h3>
+    <p>Dans chaque <b>cellule de code</b> (les cadres sombres), tu écris du Python, puis tu cliques sur <b>▶ Exécuter</b> ou tu appuies sur <kbd>Maj</kbd> + <kbd>Entrée</kbd>.</p>
+    <p>Quand ton programme pose une question avec <code>input()</code>, une <b>case bleue</b> apparaît sous le code : tape ta réponse puis appuie sur <kbd>Entrée</kbd>.</p>
+    <p>Un programme avec des conditions doit être <b>testé plusieurs fois</b>, une fois pour chaque cas. Sous chaque exercice, les <b>cas à tester</b> se cochent tout seuls quand tu les essaies, et tes <b>derniers essais</b> sont gardés : ils apparaîtront dans ton PDF.</p>
+    <p>La touche <kbd>Tab</kbd> décale ta ligne de 4 espaces. Après une ligne qui finit par <code>:</code>, la touche <kbd>Entrée</kbd> décale toute seule la ligne suivante.</p>
+    <p><b>Repères :</b> <span class="lvl g">Découverte</span> pour tout le monde · <span class="lvl o">Application</span> · <span class="lvl r">Défi</span> pour aller plus loin.</p>
+    <p style="margin-bottom:0">C'est le même Python que dans Basthon. Tu peux te tromper autant que tu veux : rien ne peut casser.</p>
+  </div>
+
+  <div class="box warn">
+    <h3>Ton travail est enregistré… dans ce navigateur</h3>
+    <p>Tout ce que tu écris est sauvegardé automatiquement <b>sur cet ordinateur et dans ce navigateur</b>. Si tu changes d'appareil, emporte une sauvegarde :</p>
+    <div class="row">
+      <button class="smallbtn" id="btn-export">⬇ Télécharger ma sauvegarde</button>
+      <label class="smallbtn" style="display:inline-block">⬆ Reprendre une sauvegarde<input type="file" id="btn-import" accept=".json,application/json" hidden></label>
+      <span class="msg" id="save-msg"></span>
+    </div>
+  </div>
+
+  <div class="next"><button class="bigbtn" data-goto="si">C'est parti : partie 1 →</button></div>
+</section>
+
+<!-- ===================================================== PARTIE 1 -->
+<section class="panel" id="p-si" role="tabpanel">
+  <h2>1. Si… alors… sinon</h2>
+  <p>Dans Scratch, tu avais le bloc <b>« si … alors … sinon »</b>. En Python, cela s'écrit :</p>
+<pre class="ex-code">if condition:
+    instructions si la condition est vraie
+else:
+    instructions sinon</pre>
+  <div class="box info" style="padding:14px 18px">
+    <h3>Deux règles indispensables</h3>
+    <ul style="margin:4px 0">
+      <li>la ligne <code>if</code> (et la ligne <code>else</code>) se termine par <b>deux-points</b> <code>:</code> ;</li>
+      <li>les instructions « dans » le <code>if</code> sont <b>décalées</b> de 4 espaces (touche <kbd>Tab</kbd>). C'est l'<b>indentation</b> : elle remplace la « mâchoire » du bloc Scratch.</li>
+    </ul>
+  </div>
+  <p>Exécute cet exemple <b>deux fois</b> : une fois avec un âge de 15 ans, une fois avec 18.</p>
+  <div class="cell demo" data-id="demo-age"><script type="text/plain" class="src">
+age = int(input("Quel âge as-tu ? "))
+if age >= 18:
+    print("Tu es majeur(e).")
+else:
+    print("Tu es mineur(e).")
+print("Fin du programme")   # pas décalé : s'exécute dans tous les cas
+</script></div>
+  <div class="box warn" style="padding:12px 16px"><code>input()</code> renvoie toujours du <b>texte</b>. Pour comparer ou calculer avec un nombre, on le transforme : <code>int(input(...))</code> pour un nombre entier, <code>float(input(...))</code> pour un nombre à virgule.</div>
+
+  <h2>Les comparaisons</h2>
+  <div class="tblwrap"><table>
+    <tr><th>Signe</th><th>Signification</th></tr>
+    <tr><td><code>==</code></td><td>est égal à (<b>deux</b> signes égal !)</td></tr>
+    <tr><td><code>!=</code></td><td>est différent de</td></tr>
+    <tr><td><code>&lt;</code> &nbsp; <code>&gt;</code></td><td>strictement inférieur / supérieur</td></tr>
+    <tr><td><code>&lt;=</code> &nbsp; <code>&gt;=</code></td><td>inférieur ou égal / supérieur ou égal</td></tr>
+  </table></div>
+  <div class="box warn" style="padding:12px 16px">⚠️ <code>=</code> range une valeur dans une variable ; <code>==</code> compare deux valeurs.</div>
+
+  <div class="box art">
+    <h3>Prédis : <code>True</code> (vrai) ou <code>False</code> (faux) ?</h3>
+    <p style="margin:0;color:var(--ink2);font-size:15px">Une comparaison vaut toujours <code>True</code> ou <code>False</code>. Réfléchis avant de cliquer : ton premier choix est noté dans le PDF.</p>
+    <div class="quiz" data-quiz="q1"></div>
+  </div>
+
+  <article class="ex" data-ex="e1.1" data-part="1" data-level="g" data-req="1" data-title="Exercice 1.1 — Le mot de passe de l'atelier">
+    <div class="exhead"><h3><span class="lvl g">Découverte</span>Exercice 1.1 — Le mot de passe de l'atelier</h3><span class="state">à faire</span></div>
+    <div class="consigne"><p>Le programme demande un mot de passe. Si c'est <code>"design"</code>, il affiche « Bienvenue dans l'atelier », sinon « Accès refusé ».</p></div>
+    <div class="cell" data-id="e1.1" data-tests="design|Design|bonjour"></div>
+    <label class="note-field"><span>Que se passe-t-il quand tu tapes « Design » avec une majuscule ? Pourquoi ?</span><textarea rows="2" data-note="e1.1-maj"></textarea></label>
+  </article>
+
+  <article class="ex" data-ex="e1.2" data-part="1" data-level="g" data-req="1" data-title="Exercice 1.2 — Pair ou impair ?">
+    <div class="exhead"><h3><span class="lvl g">Découverte</span>Exercice 1.2 — Pair ou impair ?</h3><span class="state">à faire</span></div>
+    <div class="consigne"><p>Le programme demande un nombre entier et dit s'il est pair ou impair.</p></div>
+    <details><summary>Coup de pouce</summary><p>Un nombre est pair si le reste de sa division par 2 vaut 0 : <code>nombre % 2 == 0</code>.</p></details>
+    <div class="cell" data-id="e1.2" data-tests="7|10|0"></div>
+  </article>
+
+  <div class="next"><button class="bigbtn" data-goto="elif">Partie 2 : plusieurs cas →</button></div>
+</section>
+
+<!-- ===================================================== PARTIE 2 -->
+<section class="panel" id="p-elif" role="tabpanel">
+  <h2>2. Plusieurs cas : <code>elif</code></h2>
+  <p><code>elif</code> (contraction de <em>else if</em>) permet d'enchaîner les cas. Python teste les conditions <b>dans l'ordre</b> et s'arrête à la <b>première vraie</b>.</p>
+  <div class="cell demo" data-id="demo-note"><script type="text/plain" class="src">
+note = float(input("Ta note sur 20 ? "))
+if note >= 16:
+    print("Excellent travail !")
+elif note >= 12:
+    print("Bon travail.")
+elif note >= 10:
+    print("C'est juste, accroche-toi.")
+else:
+    print("On va retravailler ça ensemble.")
+</script></div>
+  <div class="box art">
+    <label class="note-field" style="margin-top:0"><span>Expérience : dans l'exemple ci-dessus, place le test <code>note &gt;= 10</code> en premier, puis exécute avec la note 17. Que se passe-t-il ? Pourquoi ?</span>
+      <textarea rows="2" data-note="ordre-elif" placeholder="Avec 17, le programme affiche… parce que…"></textarea></label>
+  </div>
+
+  <article class="ex" data-ex="e2.1" data-part="2" data-level="g" data-req="1" data-title="Exercice 2.1 — Le cercle chromatique">
+    <div class="exhead"><h3><span class="lvl g">Découverte</span>Exercice 2.1 — Le cercle chromatique</h3><span class="state">à faire</span></div>
+    <div class="consigne"><p>Le programme demande une couleur primaire (<code>rouge</code>, <code>jaune</code> ou <code>bleu</code>) et affiche sa couleur <b>complémentaire</b> : rouge → vert, jaune → violet, bleu → orange. Pour toute autre réponse : « Je ne connais pas cette couleur. »</p></div>
+    <div class="cell" data-id="e2.1" data-tests="rouge|jaune|bleu|rose"></div>
+  </article>
+
+  <article class="ex" data-ex="e2.2" data-part="2" data-level="o" data-req="1" data-title="Exercice 2.2 — Quel format de papier ?">
+    <div class="exhead"><h3><span class="lvl o">Application</span>Exercice 2.2 — Quel format de papier ?</h3><span class="state">à faire</span></div>
+    <div class="consigne"><p>Le programme demande la largeur d'une feuille en millimètres et affiche son format : 841 → A1, 594 → A2, 420 → A3, 297 → A4, 210 → A5. Sinon : « Format inconnu ».</p></div>
+    <div class="cell" data-id="e2.2" data-tests="841|420|210|300"></div>
+  </article>
+
+  <h2>3. Combiner des conditions : <code>and</code>, <code>or</code></h2>
+  <ul>
+    <li><code>condition1 and condition2</code> : vrai si <b>les deux</b> sont vraies.</li>
+    <li><code>condition1 or condition2</code> : vrai si <b>au moins une</b> est vraie.</li>
+  </ul>
+  <div class="cell demo" data-id="demo-heure"><script type="text/plain" class="src">
+heure = int(input("Quelle heure est-il (0 à 23) ? "))
+if heure >= 8 and heure < 18:
+    print("Le lycée est ouvert.")
+else:
+    print("Le lycée est fermé.")
+</script></div>
+  <div class="box warn" style="padding:12px 16px">⚠️ Piège classique : <code>couleur == "rouge" or "orange"</code> ne fonctionne <b>pas</b> (Python le trouve toujours vrai !). Il faut répéter la comparaison : <code>couleur == "rouge" or couleur == "orange"</code>.</div>
+
+  <div class="box art">
+    <h3>Prédis : <code>True</code> ou <code>False</code> ?</h3>
+    <div class="quiz" data-quiz="q2"></div>
+  </div>
+
+  <article class="ex" data-ex="e3.1" data-part="2" data-level="o" data-req="1" data-title="Exercice 3.1 — Couleur chaude ou froide ?">
+    <div class="exhead"><h3><span class="lvl o">Application</span>Exercice 3.1 — Couleur chaude ou froide ?</h3><span class="state">à faire</span></div>
+    <div class="consigne"><p>Le programme demande une couleur. Il répond « couleur chaude » pour rouge, orange ou jaune, « couleur froide » pour bleu, vert ou violet, et « je ne sais pas » sinon. Utilise <code>or</code>.</p></div>
+    <div class="cell" data-id="e3.1" data-tests="orange|vert|noir"></div>
+  </article>
+
+  <div class="next"><button class="bigbtn" data-goto="jeux">Partie 3 : hasard et jeux →</button></div>
+</section>
+
+<!-- ===================================================== PARTIE 3 -->
+<section class="panel" id="p-jeux" role="tabpanel">
+  <h2>4. Le hasard : le module <code>random</code></h2>
+  <p>Pour faire des jeux, l'ordinateur doit pouvoir tirer au sort. Exécute cet exemple plusieurs fois :</p>
+  <div class="cell demo" data-id="demo-random"><script type="text/plain" class="src">
+import random                      # à écrire une seule fois, en haut du programme
+
+de = random.randint(1, 6)          # un entier au hasard entre 1 et 6
+print("Le dé affiche", de)
+
+choix = random.choice(["pierre", "feuille", "ciseaux"])   # un élément au hasard
+print("L'ordinateur joue", choix)
+</script></div>
+
+  <h2>5. Mini-projets : fabrique ton jeu 🎮</h2>
+  <p class="lead">Dans les cellules suivantes, <code>import random</code> est déjà écrit en haut.</p>
+
+  <article class="ex" data-ex="pA" data-part="3" data-level="o" data-req="1" data-title="Projet A — Le nombre mystère">
+    <div class="exhead"><h3><span class="lvl o">Application</span>Projet A — Le nombre mystère (version 1 essai)</h3><span class="state">à faire</span></div>
+    <div class="consigne"><p>L'ordinateur choisit un nombre entre 1 et 10. Le joueur propose un nombre. Le programme affiche « Gagné ! », « C'est plus grand » ou « C'est plus petit », et révèle le nombre mystère.</p></div>
+    <div class="cell" data-id="pA" data-random></div>
+  </article>
+
+  <article class="ex" data-ex="pB" data-part="3" data-level="o" data-req="1" data-title="Projet B — Quiz d'arts appliqués">
+    <div class="exhead"><h3><span class="lvl o">Application</span>Projet B — Quiz d'arts appliqués</h3><span class="state">à faire</span></div>
+    <div class="consigne"><p>Pose 3 questions au joueur, compte les bonnes réponses dans une variable <code>score</code> (qui commence à 0) et affiche le score final sur 3. Exemples de questions :</p>
+      <ul>
+        <li>Quelle couleur obtient-on en mélangeant du bleu et du jaune en peinture ? (vert)</li>
+        <li>En RVB, sur combien de couleurs se base l'écran ? (3)</li>
+        <li>Le format A4 mesure 21 cm sur … ? (29.7 ou 29,7 : accepte les deux réponses !)</li>
+      </ul>
+      <p>Ajoute ensuite tes propres questions.</p></div>
+    <details><summary>Coup de pouce</summary><p>Pour ajouter un point : <code>score = score + 1</code>. Pour accepter les majuscules (« Vert ») : <code>reponse = input("...").lower()</code> transforme la réponse en minuscules.</p></details>
+    <div class="cell" data-id="pB" data-body="score = 0&#10;&#10;# écris tes questions ici"></div>
+  </article>
+
+  <article class="ex" data-ex="pC" data-part="3" data-level="o" data-req="1" data-title="Projet C — Pierre, feuille, ciseaux">
+    <div class="exhead"><h3><span class="lvl o">Application</span>Projet C — Pierre, feuille, ciseaux</h3><span class="state">à faire</span></div>
+    <div class="consigne"><p>Le joueur tape son choix, l'ordinateur tire le sien au hasard. Le programme affiche les deux choix et le résultat : égalité, gagné ou perdu.</p></div>
+    <details><summary>Coup de pouce</summary><p>Commence par le cas « égalité » (les deux choix sont égaux). Puis liste les 3 cas où le joueur gagne avec <code>or</code> et <code>and</code>. Tous les autres cas, c'est perdu !</p></details>
+    <div class="cell" data-id="pC" data-random data-tests="pierre|feuille|ciseaux"></div>
+  </article>
+
+  <div class="next"><button class="bigbtn bonusbtn" data-goto="defis">★ Les défis</button><button class="bigbtn" data-goto="rendu">Rendre mon travail →</button></div>
+</section>
+
+<!-- ===================================================== DÉFIS -->
+<section class="panel" id="p-defis" role="tabpanel">
+  <div class="box bonus"><b>★ Pour aller plus loin.</b> Ces défis ne sont pas obligatoires : fais-les si les parties 1 à 3 sont terminées. Tout ce que tu fais ici sera ajouté à ton PDF.</div>
+  <h2>6. Pour aller plus loin</h2>
+
+  <article class="ex" data-ex="d1" data-part="d" data-level="r" data-title="Défi 1 — Quel designer es-tu ?">
+    <div class="exhead"><h3><span class="lvl r">Défi</span>Défi 1 — Quel designer es-tu ?</h3><span class="state">à faire</span></div>
+    <div class="consigne"><p>Écris un test de personnalité de 3 questions à choix (a, b ou c). Selon les réponses, le programme annonce un profil : graphiste, architecte d'intérieur, designer de mode…</p></div>
+    <div class="cell" data-id="d1"></div>
+  </article>
+
+  <article class="ex" data-ex="d2" data-part="d" data-level="r" data-title="Défi 2 — Année bissextile">
+    <div class="exhead"><h3><span class="lvl r">Défi</span>Défi 2 — Année bissextile</h3><span class="state">à faire</span></div>
+    <div class="consigne"><p>Une année est bissextile si elle est divisible par 4 mais pas par 100, <b>ou</b> si elle est divisible par 400. Le programme dit si une année donnée est bissextile. Teste avec 2024, 1900, 2000, 2026.</p></div>
+    <div class="cell" data-id="d2" data-tests="2024|1900|2000|2026"></div>
+  </article>
+
+  <article class="ex" data-ex="d3" data-part="d" data-level="r" data-title="Défi 3 — Pierre, feuille, ciseaux, lézard, Spock">
+    <div class="exhead"><h3><span class="lvl r">Défi</span>Défi 3 — Pierre, feuille, ciseaux, lézard, Spock</h3><span class="state">à faire</span></div>
+    <div class="consigne"><p>Ajoute deux coups au jeu (cherche les règles !). Comment éviter d'écrire une condition énorme ?</p>
+    <p style="font-size:15px;color:var(--ink2)">Astuce : le bouton <b>⤵ Reprendre le projet C</b> recopie ton programme de pierre-feuille-ciseaux dans cette cellule.</p></div>
+    <div class="cell" data-id="d3" data-random data-from="pC"></div>
+    <label class="note-field"><span>Comment as-tu évité la condition énorme ?</span><textarea rows="2" data-note="d3-astuce"></textarea></label>
+  </article>
+
+  <article class="ex" data-ex="d4" data-part="d" data-level="r" data-title="Défi 4 — Le dé truqué">
+    <div class="exhead"><h3><span class="lvl r">Défi</span>Défi 4 — Le dé truqué</h3><span class="state">à faire</span></div>
+    <div class="consigne"><p>Écris un programme qui lance deux dés et affiche « Double ! » si les deux valeurs sont égales, « Sept ! » si leur somme vaut 7, sinon la somme.</p></div>
+    <div class="cell" data-id="d4" data-random></div>
+  </article>
+
+  <div class="next"><button class="bigbtn" data-goto="rendu">Rendre mon travail →</button></div>
+</section>
+
+<!-- ===================================================== RENDU -->
+<section class="panel" id="p-rendu" role="tabpanel">
+  <h2>Rendre mon travail</h2>
+  <p class="lead">Vérifie la liste, écris ton bilan, puis télécharge ton PDF. Dépose-le ensuite sur l'ENT ou envoie-le à ton professeur.</p>
+
+  <div class="box">
+    <h3>Où en es-tu ?</h3>
+    <ul class="check" id="checklist"></ul>
+  </div>
+
+  <div class="box bilan">
+    <h3>Mon bilan</h3>
+    <label class="note-field" style="margin-top:0"><span>Ce que j'ai appris, ce qui m'a posé problème, une question pour mon professeur :</span>
+      <textarea rows="4" data-note="bilan"></textarea></label>
+  </div>
+
+  <div class="box info">
+    <div class="row">
+      <button class="bigbtn" id="btn-pdf">⬇ Télécharger mon PDF</button>
+      <span class="msg" id="pdf-msg"></span>
+    </div>
+    <p style="margin-bottom:0;color:var(--ink2);font-size:15px">Le PDF contient ton identité, un résumé, tes réponses aux questions et tes prédictions, puis chaque exercice avec ton code, les cas testés et tes derniers essais.</p>
+  </div>
+
+  <details class="noprint" style="margin-top:40px"><summary>Tout effacer et recommencer</summary>
+    <p>Efface tout le travail enregistré dans ce navigateur (code, essais, réponses). Impossible de revenir en arrière.</p>
+    <button class="smallbtn" id="btn-reset" style="border-color:var(--err);color:var(--err)">Effacer tout mon travail</button>
+  </details>
+</section>
+</main>
+
+<footer>SNT · ESAAT Roubaix · Python exécuté dans le navigateur (Pyodide, comme Basthon)</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+"use strict";
+/* =========================================================== CONTENUS */
+const MAXHIST = 6;
+const QUIZ = {
+  q1: { title: "Les comparaisons", items: [
+    { expr: "7 >= 7", ans: true, why: ">= veut dire « supérieur OU égal » : 7 est égal à 7." },
+    { expr: "3 != 3", ans: false, why: "!= veut dire « différent de » : 3 n'est pas différent de 3." },
+    { expr: '"rouge" == "Rouge"', ans: false, why: "Pour Python, une majuscule change tout : ce ne sont pas les mêmes textes." },
+    { expr: "10 % 2 == 0", ans: true, why: "10 divisé par 2 donne 5, reste 0 : 10 est pair." },
+    { expr: '"12" == 12', ans: false, why: '"12" est un texte, 12 est un nombre. C\'est pour ça qu\'on écrit int(input(...)).' },
+  ]},
+  q2: { title: "and / or", items: [
+    { ctx: "heure = 20", expr: "heure >= 8 and heure < 18", ans: false, why: "20 < 18 est faux. Avec and, il faut que les DEUX soient vraies." },
+    { ctx: "heure = 7", expr: "heure < 8 or heure >= 18", ans: true, why: "7 < 8 est vrai. Avec or, une seule vraie suffit." },
+    { ctx: 'couleur = "vert"', expr: 'couleur == "bleu" or couleur == "vert"', ans: true, why: "La deuxième comparaison est vraie, donc le or est vrai." },
+    { ctx: "n = 15", expr: "n % 3 == 0 and n % 5 == 0", ans: true, why: "15 est divisible par 3 ET par 5." },
+  ]},
+};
+
+/* =========================================================== ÉTAT & SAUVEGARDE */
+const KEY = "snt-esaat-conditions-seance2-v1";
+const blank = () => ({ id:{nom:"",prenom:"",classe:""}, cells:{}, notes:{}, quiz:{}, tab:"accueil" });
+let S = blank();
+try { const raw = localStorage.getItem(KEY); if (raw) S = Object.assign(blank(), JSON.parse(raw)); } catch(e) {}
+let saveTimer = null, saveWarned = false;
+function save(now){
+  clearTimeout(saveTimer);
+  const doit = () => {
+    try { localStorage.setItem(KEY, JSON.stringify(S)); }
+    catch(e) { if (!saveWarned) { saveWarned = true; alert("Attention : la sauvegarde automatique est pleine. Supprime quelques essais (✕) et télécharge une sauvegarde depuis l'onglet « Commencer »."); } }
+  };
+  if (now) doit(); else saveTimer = setTimeout(doit, 300);
+}
+window.addEventListener("beforeunload", () => save(true));
+
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const slug = s => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^A-Za-z0-9]+/g, "_").replace(/^_|_$/g, "");
+const hhmm = iso => { try { return new Date(iso).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }); } catch(e) { return ""; } };
+
+/* =========================================================== ONGLETS */
+function showTab(name){
+  $$("nav.tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.tab === name));
+  $$("section.panel").forEach(p => p.classList.toggle("active", p.id === "p-" + name));
+  S.tab = name; save();
+  if (name === "rendu") renderChecklist();
+  requestAnimationFrame(() => $$("#p-" + name + " textarea[data-note]").forEach(autosize));
+  window.scrollTo(0, 0);
+}
+$$("nav.tabs button").forEach(b => b.addEventListener("click", () => showTab(b.dataset.tab)));
+$$("[data-goto]").forEach(b => b.addEventListener("click", () => showTab(b.dataset.goto)));
+
+/* =========================================================== IDENTITÉ & NOTES */
+for (const k of ["nom","prenom","classe"]) {
+  const el = $("#id-" + k); el.value = S.id[k] || "";
+  el.addEventListener("input", () => { S.id[k] = el.value; save(); });
+}
+function autosize(t){ if (!t.offsetParent) return; t.style.height = "auto"; t.style.height = (t.scrollHeight + 4) + "px"; }
+$$("textarea[data-note]").forEach(t => {
+  t.value = S.notes[t.dataset.note] || "";
+  t.addEventListener("input", () => { S.notes[t.dataset.note] = t.value; save(); autosize(t); });
+  requestAnimationFrame(() => autosize(t));
+});
+
+/* =========================================================== PRÉDICTIONS */
+function renderQuiz(el){
+  const id = el.dataset.quiz, q = QUIZ[id], ans = S.quiz[id] || (S.quiz[id] = {});
+  el.innerHTML = "";
+  q.items.forEach((it, i) => {
+    const row = document.createElement("div"); row.className = "qi";
+    const a = ans[i];
+    const good = a && (a.v === it.ans);
+    row.innerHTML = `<div class="qexpr">${it.ctx ? `<span class="qctx">avec <code>${esc(it.ctx)}</code></span>` : ""}<code>${esc(it.expr)}</code></div>
+      <div class="qbtns"><button data-v="1">True</button><button data-v="0">False</button></div>
+      <div class="qfb ${a ? (good ? "good" : "bad") : ""}">${a ? (good ? "✓ Exact. " : "✗ Non. ") + esc(it.why) : ""}</div>`;
+    row.querySelectorAll("button").forEach(b => {
+      const v = b.dataset.v === "1";
+      if (a && a.v === v) b.classList.add("sel", good ? "good" : "bad");
+      b.addEventListener("click", () => {
+        if (!ans[i]) ans[i] = { v, first: v === it.ans }; else ans[i].v = v;
+        save(); renderQuiz(el);
+      });
+    });
+    el.appendChild(row);
+  });
+  const st = quizStats(id);
+  const sc = document.createElement("div"); sc.className = "qscore";
+  sc.textContent = st.answered ? `${st.correct} / ${st.total} justes · au premier essai : ${st.first} / ${st.total}` : "";
+  el.appendChild(sc);
+}
+function quizStats(id){
+  const q = QUIZ[id], ans = S.quiz[id] || {};
+  let answered = 0, correct = 0, first = 0;
+  q.items.forEach((it, i) => { const a = ans[i]; if (!a) return; answered++; if (a.v === it.ans) correct++; if (a.first) first++; });
+  return { total: q.items.length, answered, correct, first };
+}
+$$(".quiz").forEach(renderQuiz);
+
+/* =========================================================== COLORATION */
+const KW = new Set("and as assert async await break class continue def del elif else except False finally for from global if import in is lambda None nonlocal not or pass raise return True try while with yield".split(" "));
+const BI = new Set("print input int float str type len range round abs min max random randint choice bool list lower upper strip".split(" "));
+function highlight(src){
+  const re = /(#[^\n]*)|([rRbBfFuU]{0,2}(?:"""[\s\S]*?(?:"""|$)|'''[\s\S]*?(?:'''|$)|"(?:\\.|[^"\\\n])*"?|'(?:\\.|[^'\\\n])*'?))|(\b\d+(?:\.\d+)?\b)|([A-Za-z_À-ÿ][\wÀ-ÿ]*)/g;
+  let out = "", last = 0, m;
+  while ((m = re.exec(src))) {
+    out += esc(src.slice(last, m.index));
+    const t = esc(m[0]);
+    if (m[1]) out += '<span class="tk-com">' + t + "</span>";
+    else if (m[2]) out += '<span class="tk-str">' + t + "</span>";
+    else if (m[3]) out += '<span class="tk-num">' + t + "</span>";
+    else if (KW.has(m[4])) out += '<span class="tk-kw">' + t + "</span>";
+    else if (BI.has(m[4])) out += '<span class="tk-bi">' + t + "</span>";
+    else out += t;
+    last = re.lastIndex;
+    if (m[0].length === 0) re.lastIndex++;
+  }
+  return out + esc(src.slice(last)) + "\n";
+}
+
+/* =========================================================== input() → await */
+function skipString(s, i){
+  const q = s[i], triple = s.substr(i,3) === q.repeat(3);
+  let j = i + (triple ? 3 : 1);
+  while (j < s.length) {
+    if (s[j] === "\\") { j += 2; continue; }
+    if (triple) { if (s.substr(j,3) === q.repeat(3)) return j + 3; }
+    else { if (s[j] === q) return j + 1; if (s[j] === "\n") return j; }
+    j++;
+  }
+  return s.length;
+}
+function matchParen(s, i){
+  let d = 0, j = i;
+  while (j < s.length) {
+    const c = s[j];
+    if (c === '"' || c === "'") { j = skipString(s, j); continue; }
+    if (c === "#") { const k = s.indexOf("\n", j); j = k < 0 ? s.length : k; continue; }
+    if (c === "(") d++;
+    else if (c === ")") { d--; if (d === 0) return j; }
+    j++;
+  }
+  return -1;
+}
+function transformInput(s){
+  const isId = c => !!c && /[\wÀ-ÿ]/.test(c);
+  let out = "", i = 0;
+  while (i < s.length) {
+    const c = s[i];
+    if (c === "#") { const k = s.indexOf("\n", i); const e = k < 0 ? s.length : k; out += s.slice(i, e); i = e; continue; }
+    if (c === '"' || c === "'") { const e = skipString(s, i); out += s.slice(i, e); i = e; continue; }
+    if (s.startsWith("input", i) && !isId(s[i-1]) && s[i-1] !== "." && !isId(s[i+5])) {
+      let j = i + 5; while (s[j] === " " || s[j] === "\t") j++;
+      if (s[j] === "(") {
+        const k = matchParen(s, j);
+        if (k > 0) { out += "(await __inp(" + transformInput(s.slice(j+1, k)) + "))"; i = k + 1; continue; }
+      }
+    }
+    if (isId(c)) { let j = i; while (isId(s[j])) j++; out += s.slice(i, j); i = j; continue; }
+    out += c; i++;
+  }
+  return out;
+}
+
+/* =========================================================== PYTHON (Pyodide) */
+const PYO = "https://cdn.jsdelivr.net/npm/pyodide@0.26.4/";
+let pyPromise = null, py = null, running = null;
+function setPyStatus(kind, text){ const el = $("#pystatus"); el.className = "pystatus " + kind; el.querySelector("span").textContent = text; }
+function ensurePy(){
+  if (pyPromise) return pyPromise;
+  pyPromise = new Promise((resolve, reject) => {
+    const s = document.createElement("script");
+    s.src = PYO + "pyodide.js";
+    s.onload = async () => {
+      try {
+        py = await loadPyodide({ indexURL: PYO });
+        py.setStdout({ batched: t => running && running.write(t + "\n", "out") });
+        py.setStderr({ batched: t => running && running.write(t + "\n", "err") });
+        setPyStatus("ready", "Python est prêt");
+        resolve(py);
+      } catch (e) { console.error(e); fail(e); }
+    };
+    s.onerror = fail;
+    function fail(e){
+      setPyStatus("fail", "Python indisponible : vérifie ta connexion internet puis recharge la page");
+      pyPromise = null; reject(e);
+    }
+    document.head.appendChild(s);
+  });
+  return pyPromise;
+}
+/* garde-fou : une boucle qui affiche sans fin est arrêtée */
+const GUARD = `import builtins as _bi
+_nprint = [0]
+def print(*args, **kwargs):
+    _nprint[0] += 1
+    if _nprint[0] > 3000:
+        raise RuntimeError("trop d'affichages (plus de 3000 print) : ta boucle ne s'arrete peut-etre jamais")
+    _bi.print(*args, **kwargs)`;
+
+/* =========================================================== AIDE AUX ERREURS */
+const NEED_NUM = "<code>input()</code> renvoie toujours du <b>texte</b>. Pour comparer ou calculer avec un nombre, transforme la réponse : <code>int(input(...))</code> (ou <code>float(input(...))</code> pour un nombre à virgule).";
+const HINTS = [
+  [/trop d'affichages/, "Ton programme affiche sans s'arrêter : une boucle ne se termine jamais. Vérifie la condition de ton <code>while</code>."],
+  [/invalid literal for int\(\) with base 10: '([^']*)'/, m => /[.,]/.test(m[1]) ? "Tu as tapé un nombre à virgule (« " + esc(m[1]) + " ») alors que le programme attend un nombre <b>entier</b> (<code>int</code>). Pour accepter les virgules, utilise <code>float(input(...))</code> et tape un <b>point</b> : 12.5" : "Le programme attendait un <b>nombre entier</b>, mais tu as tapé « " + esc(m[1]) + " ». Relance et tape un nombre (sans lettres ni espaces)."],
+  [/could not convert string to float: '([^']*)'/, m => "Le programme attendait un nombre, mais tu as tapé « " + esc(m[1]) + " ». Attention : Python veut un <b>point</b> (12.5) et pas une virgule (12,5)."],
+  [/not all arguments converted during string formatting/, NEED_NUM],
+  [/not supported between instances of 'str' and '(int|float)'|not supported between instances of '(int|float)' and 'str'/, NEED_NUM],
+  [/can only concatenate str \(not "(int|float)"\) to str/, "On ne peut pas coller (+) un texte et un nombre. Sépare les morceaux par des virgules dans <code>print</code>, ou transforme le nombre en texte avec <code>str(...)</code>."],
+  [/unsupported operand type\(s\) for .*'str'/, NEED_NUM],
+  [/NameError: name 'random' is not defined/, "Il manque <code>import random</code> en haut du programme."],
+  [/NameError: name '(randint|choice)' is not defined/, m => "On écrit <code>random." + esc(m[1]) + "(...)</code>, avec <code>random.</code> devant (et <code>import random</code> en haut)."],
+  [/NameError: name '(true|false|TRUE|FALSE)' is not defined/, "En Python, on écrit <code>True</code> et <code>False</code> avec une majuscule."],
+  [/'await' outside (async )?function|asynchronous comprehension outside/, "Dans cette page, <code>input()</code> ne fonctionne pas à l'intérieur d'une fonction <code>def</code>. Écris ton programme sans <code>def</code>, ou utilise Basthon pour cet essai."],
+  [/missing (\d+) required positional argument/, "Il manque des valeurs entre les parenthèses. Par exemple : <code>random.randint(1, 10)</code> attend deux nombres."],
+  [/takes (\d+) positional arguments? but (\d+) (were|was) given/, m => "Tu donnes <b>" + m[2] + "</b> valeurs alors qu'il en faut <b>" + m[1] + "</b>."],
+  [/empty range (for|in) randrange|randrange\(\) arg/, "<code>random.randint(a, b)</code> veut un <code>a</code> plus petit que (ou égal à) <code>b</code>."],
+  [/NameError: name '([^']+)' is not defined/, m => "Python ne connaît pas <code>" + esc(m[1]) + "</code>. Faute de frappe ? Variable pas encore créée ? Ou bien c'était un texte et il manque les guillemets : <code>\"" + esc(m[1]) + "\"</code> ?"],
+  [/Maybe you meant '==' or ':=' instead of '='|cannot assign to/, "Pour comparer deux valeurs, on écrit <code>==</code> (deux signes égal). Un seul <code>=</code> sert à ranger une valeur dans une variable."],
+  [/expected ':'/, "Il manque les deux-points <code>:</code> à la fin de la ligne <code>if</code>, <code>elif</code> ou <code>else</code>."],
+  [/expected an indented block/, "Après une ligne qui finit par <code>:</code>, les instructions doivent être décalées de 4 espaces (touche Tab)."],
+  [/unexpected indent/, "Cette ligne est décalée alors qu'elle ne devrait pas l'être. Retire les espaces au début de la ligne."],
+  [/unindent does not match/, "Les décalages ne sont pas alignés : les lignes d'un même bloc doivent avoir exactement le même nombre d'espaces."],
+  [/unterminated string literal|EOL while scanning/, "Un texte n'est pas fermé : il manque un guillemet <code>\"</code>."],
+  [/was never closed|unexpected EOF/, "Une parenthèse ou un crochet ouvert n'a pas été refermé. Astuce : <code>int(input(\"...\"))</code> se termine par <b>deux</b> parenthèses."],
+  [/unmatched '\)'/, "Il y a une parenthèse fermante <code>)</code> en trop."],
+  [/invalid character/, "Un caractère n'est pas reconnu par Python (guillemet typographique « » ou ’ ? Utilise les guillemets droits \" du clavier)."],
+  [/invalid decimal literal/, "Un nombre est collé à des lettres, ou tu as écrit un nombre à virgule avec une <b>virgule</b> : Python veut un <b>point</b> (29.7)."],
+  [/ZeroDivisionError/, "Division par zéro : c'est impossible, même pour un ordinateur !"],
+  [/IndentationError/, "Problème de décalage (indentation) : vérifie les espaces en début de ligne."],
+  [/SyntaxError/, "Erreur d'écriture : vérifie les deux-points <code>:</code>, les parenthèses, les guillemets, et <code>==</code> pour comparer."],
+];
+/* erreurs fréquentes repérées directement dans le code */
+function lintCode(code){
+  const src = code.split("\n").map(l => l.replace(/#.*$/, "")).join("\n");
+  const err = [], warn = [];
+  if (/^\s*else\s+if\b/m.test(src)) err.push("En Python, « sinon si » s'écrit en un seul mot : <code>elif condition:</code> (et pas <code>else if</code>).");
+  else if (/^\s*else\s*[^:\s]/m.test(src)) err.push("<code>else</code> n'a jamais de condition : on écrit <code>else:</code> tout seul. Pour une nouvelle condition, utilise <code>elif condition:</code>.");
+  if (/^\s*(If|Elif|Else|IF|ELSE|ELIF)\b/m.test(src)) err.push("Les mots-clés s'écrivent en minuscules : <code>if</code>, <code>elif</code>, <code>else</code>.");
+  if (/=<|=>/.test(src)) err.push("On écrit <code>&lt;=</code> et <code>&gt;=</code> (le signe = en second).");
+  if (/(==|!=)\s*("[^"\n]*"|'[^'\n]*'|-?\d+(\.\d+)?)\s+(or|and)\s+("|'|-?\d)/.test(src))
+    warn.push("Attention : <code>couleur == \"rouge\" or \"orange\"</code> ne fait pas ce que tu crois (c'est toujours vrai !). Répète la comparaison : <code>couleur == \"rouge\" or couleur == \"orange\"</code>.");
+  return { err, warn };
+}
+function formatError(msg, original){
+  const lines = String(msg).split("\n");
+  const orig = original.split("\n");
+  const start = lines.findIndex(l => l.includes('File "<exec>"'));
+  const rel = start >= 0 ? lines.slice(start) : lines.filter(l => l.trim()).slice(-1);
+  const res = []; let lastLine = 0, dropCaret = false, skipping = false;
+  for (const l of rel) {
+    const m = l.match(/File "<exec>", line (\d+)/);
+    if (m) { skipping = false; lastLine = +m[1]; res.push("Ligne " + lastLine + " :"); continue; }
+    if (/^\s*File "/.test(l)) { skipping = true; continue; }
+    if (skipping && /^\s/.test(l)) continue;
+    skipping = false;
+    if (l.includes("__inp")) { res.push("    " + (orig[lastLine-1] || "").trim()); dropCaret = true; continue; }
+    if (/^\s*[\^~]+\s*$/.test(l) && dropCaret) { dropCaret = false; continue; }
+    res.push(l);
+  }
+  while (res.length && !res[res.length-1].trim()) res.pop();
+  const txt = res.join("\n");
+  let hint = null;
+  for (const [re, h] of HINTS) { const mm = txt.match(re); if (mm) { hint = typeof h === "function" ? h(mm) : h; break; } }
+  return { txt, hint };
+}
+
+/* =========================================================== CELLULES */
+const CELLS = {};
+let stopRequested = false;
+const PLACEHOLDER = /^#.*ici\s*$/;
+const exLabel = id => { const a = $(`article.ex[data-ex="${id}"]`); return a ? a.dataset.title.split(" — ")[0].replace("Exercice ", "ex. ").replace("Projet ", "projet ") : id; };
+function starterFor(div){
+  const src = div.querySelector("script.src");
+  if (src) return src.textContent.replace(/^\s*\n/, "").replace(/\s+$/, "") + "\n";
+  let s = div.dataset.pre ? div.dataset.pre + "\n" : "";
+  if (div.dataset.random !== undefined) s += "import random\n\n";
+  return s + (div.dataset.body || "# écris ton programme ici") + "\n";
+}
+const hasOut = st => !!(st && st.out && st.out.some(([k, t]) => (k === "out" || k === "in") && t.trim()));
+const testsOf = c => c.tests.map(t => ({ t, ok: c.st.hist.some(h => h.status === "ok" && h.inputs && h.inputs.length && String(h.inputs[0]).trim() === t) }));
+
+function makeCell(div){
+  const id = div.dataset.id;
+  const starter = starterFor(div);
+  const st = S.cells[id] || (S.cells[id] = { code: starter, out: [], status: null, stale: false, runs: 0, hist: [] });
+  if (!st.hist) st.hist = [];
+  const isDemo = div.classList.contains("demo");
+  const tests = (div.dataset.tests || "").split("|").filter(Boolean);
+  const from = div.dataset.from;
+  div.innerHTML = `
+    <div class="cellbar">
+      <span class="tag">${isDemo ? "exemple · à exécuter et modifier" : "Maj + Entrée pour exécuter"}</span>
+      ${from ? `<button class="btn from" title="Recopier ici ton programme de cet exercice">⤵ Reprendre le ${esc(exLabel(from))}</button>` : ""}
+      <button class="btn ghost reset" title="Revenir au code de départ">↺ Réinitialiser</button>
+      <button class="btn stop" hidden>■ Arrêter</button>
+      <button class="btn run">▶ Exécuter</button>
+    </div>
+    <div class="editor"><pre aria-hidden="true"></pre><textarea spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" aria-label="Code Python"></textarea></div>
+    <div class="out" aria-live="polite"></div>
+    ${isDemo ? "" : `<div class="essais" hidden><div class="tests"></div><div class="histlabel"></div><div class="hist"></div></div>`}`;
+  const ta = div.querySelector(".editor textarea"), pre = div.querySelector(".editor pre"), out = div.querySelector(".out");
+  ta.placeholder = "# Écris ton programme ici";
+  ta.value = st.code;
+  const paint = () => { pre.innerHTML = highlight(ta.value); };
+  paint();
+  const c = { id, div, ta, out, st, starter, isDemo, tests, inputs: [],
+    runBtn: div.querySelector(".run"), stopBtn: div.querySelector(".stop"),
+    outLen: 0,
+    write(text, kind){
+      if (this.outLen > 30000) return;
+      this.outLen += text.length;
+      if (this.outLen > 30000) { text = "\n… (affichage coupé : trop de texte)\n"; kind = "sys"; }
+      const last = st.out[st.out.length-1];
+      if (last && last[0] === kind) last[1] += text; else st.out.push([kind, text]);
+      const field = out.querySelector("input.inp");
+      const sp = document.createElement("span"); sp.className = "k-" + kind; sp.textContent = text;
+      if (field) out.insertBefore(sp, field); else out.appendChild(sp);
+      out.scrollTop = out.scrollHeight;
+    },
+    hint(html){ st.out.push(["hint", html]); const d = document.createElement("span"); d.className = "hint"; d.innerHTML = "💡 " + html; out.appendChild(d); },
+    clear(){ st.out = []; out.innerHTML = ""; this.outLen = 0; },
+    renderOut(){ out.innerHTML = ""; for (const [k, t] of st.out) { if (k === "hint") { const d = document.createElement("span"); d.className = "hint"; d.innerHTML = "💡 " + t; out.appendChild(d); } else { const sp = document.createElement("span"); sp.className = "k-" + k; sp.textContent = t; out.appendChild(sp); } } },
+  };
+  c.renderOut();
+  ta.addEventListener("input", () => {
+    paint(); st.code = ta.value;
+    if (st.runs > 0) st.stale = true;
+    updateState(c); save();
+  });
+  ta.addEventListener("keydown", e => onKey(e, c));
+  c.runBtn.addEventListener("click", () => runCell(c));
+  c.stopBtn.addEventListener("click", () => { stopRequested = true; if (c.pendingReject) c.pendingReject(new Error("stop")); });
+  div.querySelector(".reset").addEventListener("click", () => {
+    if (ta.value !== starter && !confirm("Revenir au code de départ ? Ton code actuel sera effacé (tes essais restent).")) return;
+    setCode(ta, starter); ta.focus();
+  });
+  if (from) div.querySelector(".from").addEventListener("click", () => takeFrom(c, from));
+  CELLS[id] = c;
+  renderEssais(c);
+  return c;
+}
+
+function segsHTML(segs){ return segs.map(([k, t]) => `<span class="k-${k}">${esc(t)}</span>`).join(""); }
+function renderEssais(c){
+  const zone = c.div.querySelector(".essais"); if (!zone) return;
+  const st = c.st;
+  zone.hidden = !c.tests.length && !st.hist.length;
+  const tb = zone.querySelector(".tests");
+  tb.hidden = !c.tests.length;
+  tb.innerHTML = c.tests.length ? "<b>Cas à tester :</b>" + testsOf(c).map(x => `<span class="chip${x.ok ? " ok" : ""}">${esc(x.t)}</span>`).join("") : "";
+  zone.querySelector(".histlabel").textContent = st.hist.length ? `Mes essais (les ${MAXHIST} derniers sont gardés pour le PDF)` : "";
+  const box = zone.querySelector(".hist"); box.innerHTML = "";
+  st.hist.forEach((h, i) => {
+    const el = document.createElement("div"); el.className = "essai";
+    const n = st.hist.length - i;
+    el.innerHTML = `<div class="eh"><span>essai ${n} · ${esc(hhmm(h.at))} · ${h.status === "ok" ? '<span class="good">✓</span>' : '<span class="bad">erreur</span>'}</span><button title="Supprimer cet essai">✕</button></div><pre>${segsHTML(h.segs)}</pre>`;
+    el.querySelector("button").addEventListener("click", () => { if (!confirm("Supprimer l'essai " + n + " ?")) return; st.hist.splice(i, 1); renderEssais(c); updateState(c); save(true); });
+    box.appendChild(el);
+  });
+}
+
+/* reprendre le code d'un autre exercice */
+function extractBody(code){
+  return code.split("\n").filter(l => !PLACEHOLDER.test(l.trim()) && l.trim() !== "import random").join("\n")
+    .replace(/\n{3,}/g, "\n\n").replace(/^\s*\n/, "").replace(/\s+$/, "");
+}
+function takeFrom(c, srcId){
+  const src = CELLS[srcId];
+  const body = src ? extractBody(src.st.code) : "";
+  if (!body.trim()) { c.clear(); c.write("Le " + exLabel(srcId) + " est encore vide : fais-le d'abord !\n", "sys"); return; }
+  if (c.ta.value !== c.starter && !confirm("Remplacer ton code actuel par ton programme du " + exLabel(srcId) + " ?")) return;
+  const lines = c.starter.replace(/\s+$/, "").split("\n");
+  const idx = lines.findIndex(l => PLACEHOLDER.test(l.trim()));
+  const ins = "# repris du " + exLabel(srcId) + " :\n" + body;
+  if (idx >= 0) lines.splice(idx, 1, ins); else lines.push(ins);
+  setCode(c.ta, lines.join("\n") + "\n");
+  c.clear(); c.write("Code du " + exLabel(srcId) + " recopié. À toi de le modifier !\n", "sys");
+}
+
+function setCode(ta, txt){
+  ta.focus(); ta.select();
+  let ok = false;
+  try { ok = document.execCommand("insertText", false, txt); } catch(e) {}
+  if (!ok || ta.value !== txt) { ta.value = txt; ta.dispatchEvent(new Event("input")); }
+}
+function insertAt(ta, text, start, end){
+  ta.setSelectionRange(start, end);
+  let ok = false;
+  try { ok = document.execCommand("insertText", false, text); } catch(e) {}
+  if (!ok) { ta.setRangeText(text, start, end, "end"); ta.dispatchEvent(new Event("input")); }
+}
+let escFlag = false;
+function onKey(e, c){
+  const ta = c.ta;
+  if (e.key === "Escape") { escFlag = true; return; }
+  if (e.key === "Enter" && (e.shiftKey || e.ctrlKey || e.metaKey)) { e.preventDefault(); runCell(c); return; }
+  const v = ta.value, s = ta.selectionStart, en = ta.selectionEnd;
+  const lineStart = v.lastIndexOf("\n", s - 1) + 1;
+  if (e.key === "Tab") {
+    if (escFlag) { escFlag = false; return; }
+    e.preventDefault();
+    const blockEnd = v.indexOf("\n", en); const be = blockEnd < 0 ? v.length : blockEnd;
+    if (s !== en && v.slice(s, en).includes("\n") || e.shiftKey) {
+      const block = v.slice(lineStart, be).split("\n");
+      const nb = block.map(l => e.shiftKey ? l.replace(/^ {1,4}/, "") : "    " + l).join("\n");
+      insertAt(ta, nb, lineStart, be);
+      ta.setSelectionRange(lineStart, lineStart + nb.length);
+    } else insertAt(ta, "    ", s, en);
+    return;
+  }
+  escFlag = false;
+  if (e.key === "Enter" && !e.altKey) {
+    e.preventDefault();
+    const line = v.slice(lineStart, s);
+    let ind = (line.match(/^[ \t]*/) || [""])[0];
+    if (/:\s*(#.*)?$/.test(line)) ind += "    ";
+    insertAt(ta, "\n" + ind, s, en);
+    return;
+  }
+  if (e.key === "Backspace" && s === en && s > lineStart) {
+    const before = v.slice(lineStart, s);
+    if (/^ +$/.test(before)) {
+      e.preventDefault();
+      const n = before.length % 4 || 4;
+      insertAt(ta, "", s - n, s);
+    }
+  }
+}
+
+function updateState(c){
+  const art = c.div.closest("article.ex"); if (!art) return;
+  const tag = art.querySelector(".state");
+  const st = c.st;
+  let cls = "", txt = "à faire";
+  if (st.runs > 0 && st.stale) { cls = "stale"; txt = "modifié, à ré-exécuter"; }
+  else if (st.status === "ok" && hasOut(st)) {
+    cls = "ok"; txt = "✓ testé";
+    if (c.tests.length) { const t = testsOf(c); txt += " · " + t.filter(x => x.ok).length + "/" + t.length + " cas"; }
+    else if (st.hist.length > 1) txt += " · " + st.hist.length + " essais";
+  }
+  else if (st.status === "ok") { cls = "stale"; txt = "exécuté, mais rien ne s'affiche"; }
+  else if (st.status === "err") { cls = "err"; txt = "erreur"; }
+  else if (st.status === "stop") { cls = "stale"; txt = "arrêté"; }
+  else if (st.code.trim() && st.code.trim() !== c.starter.trim()) { cls = "stale"; txt = "pas encore exécuté"; }
+  tag.className = "state " + cls; tag.textContent = txt;
+  updateBadges();
+}
+
+function setRunningUI(on, c){
+  $$(".cell .run").forEach(b => b.disabled = on);
+  if (c) { c.stopBtn.hidden = !on; c.runBtn.textContent = on ? "… en cours" : "▶ Exécuter"; }
+}
+
+function askInput(c, prompt){
+  return new Promise((resolve, reject) => {
+    if (prompt) c.write(prompt, "out");
+    const field = document.createElement("input");
+    field.className = "inp"; field.type = "text"; field.setAttribute("aria-label", prompt || "Réponse");
+    field.placeholder = "ta réponse + Entrée";
+    c.out.appendChild(field);
+    c.out.scrollTop = c.out.scrollHeight;
+    field.focus({ preventScroll: false });
+    c.pendingReject = reject;
+    field.addEventListener("keydown", e => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        const val = field.value;
+        field.remove(); c.pendingReject = null;
+        c.inputs.push(val);
+        c.write(val + "\n", "in");
+        resolve(val);
+      }
+    });
+  });
+}
+
+async function runCell(c){
+  if (running) return;
+  let p;
+  c.runBtn.disabled = true;
+  try { p = await ensurePy(); }
+  catch(e) { c.runBtn.disabled = false; c.clear(); c.write("Python n'a pas pu se charger. Vérifie ta connexion internet, puis recharge la page.\n", "err"); return; }
+  running = c; stopRequested = false; c.inputs = [];
+  setRunningUI(true, c);
+  c.clear();
+  await new Promise(r => setTimeout(r, 20));
+  const code = c.ta.value;
+  let tcode = code;
+  try { tcode = transformInput(code); } catch(e) {}
+  const lint = lintCode(code);
+  const ns = p.toPy({});
+  ns.set("__inp", pr => askInput(c, pr === undefined ? "" : String(pr)));
+  let status = "ok";
+  try { p.runPython(GUARD, { globals: ns, filename: "<garde>" }); } catch(e) { console.error(e); }
+  try {
+    await p.runPythonAsync(tcode, { globals: ns, filename: "<exec>" });
+  } catch (e) {
+    if (stopRequested) { status = "stop"; c.write("\n■ Programme arrêté.\n", "sys"); }
+    else {
+      status = "err";
+      const f = formatError(e && e.message ? e.message : String(e), code);
+      c.write(f.txt + "\n", "err");
+      const h = lint.err[0] || f.hint;
+      if (h) c.hint(h);
+    }
+  } finally {
+    try { ns.destroy(); } catch(e) {}
+    $$("input.inp", c.out).forEach(x => x.remove());
+  }
+  if (status === "ok" && !hasOut(c.st)) c.write("(Le programme s'est exécuté, mais n'a rien affiché. As-tu oublié print(...) ?)\n", "sys");
+  if (status !== "stop") lint.warn.forEach(w => c.hint(w));
+  c.st.status = status; c.st.stale = false; c.st.runs = (c.st.runs || 0) + 1;
+  c.st.at = new Date().toISOString();
+  if (!c.isDemo && status !== "stop") {
+    let budget = 3000;
+    const segs = [];
+    for (const [k, t] of c.st.out) {
+      if (k === "hint" || k === "sys" || budget <= 0) continue;
+      const tt = t.length > budget ? t.slice(0, budget) + "…\n" : t; budget -= t.length;
+      segs.push([k, tt]);
+    }
+    if (segs.length) {
+      const e = { at: c.st.at, status, segs, inputs: c.inputs.slice() };
+      const prev = c.st.hist[0];
+      if (prev && prev.status === status && JSON.stringify(prev.segs) === JSON.stringify(segs)) prev.at = e.at;
+      else c.st.hist.unshift(e);
+      c.st.hist = c.st.hist.slice(0, MAXHIST);
+    }
+  }
+  running = null; setRunningUI(false, c);
+  renderEssais(c); updateState(c); save();
+}
+
+/* =========================================================== PROGRESSION */
+function exercises(part){ return $$(`article.ex[data-part="${part}"]`); }
+function exDone(art){ const c = CELLS[art.dataset.ex]; return !!(c && c.st.status === "ok" && !c.st.stale && hasOut(c.st) && c.st.code.trim() !== c.starter.trim()); }
+function exTouched(art){ const c = CELLS[art.dataset.ex]; return !!(c && ((c.st.runs > 0) || (c.st.code.trim() && c.st.code.trim() !== c.starter.trim()) || c.st.hist.length)); }
+function testsTotals(arts){
+  let ok = 0, all = 0;
+  for (const a of arts) { const c = CELLS[a.dataset.ex]; if (!c || !c.tests.length) continue; const t = testsOf(c); all += t.length; ok += t.filter(x => x.ok).length; }
+  return { ok, all };
+}
+function updateBadges(){
+  for (const p of ["1","2","3","d"]) {
+    const ex = exercises(p);
+    $("#b-" + p).textContent = ex.filter(exDone).length + "/" + ex.length;
+  }
+}
+const PARTS = [["1", "Partie 1 (si… sinon)"], ["2", "Partie 2 (elif, and, or)"], ["3", "Partie 3 (hasard et mini-jeux)"]];
+function renderChecklist(){
+  const ul = $("#checklist"); const items = [];
+  const idOk = S.id.nom.trim() && S.id.prenom.trim();
+  items.push([idOk ? "yes" : "", idOk ? `Identité : <b>${esc(S.id.prenom)} ${esc(S.id.nom)}</b>${S.id.classe ? " · " + esc(S.id.classe) : ""}` : "Identité : remplis ton nom et ton prénom dans l'onglet « Commencer »"]);
+  for (const [p, name] of PARTS) {
+    const req = exercises(p).filter(a => a.dataset.req), ok = req.filter(exDone);
+    items.push([ok.length === req.length ? "yes" : "", `${name} : <b>${ok.length} / ${req.length}</b> exercices testés sans erreur` + (ok.length < req.length ? " (manquants : " + req.filter(a => !exDone(a)).map(a => a.dataset.title.split(" — ")[0].replace("Exercice ", "")).join(", ") + ")" : "")]);
+  }
+  const tt = testsTotals([...exercises("1"), ...exercises("2"), ...exercises("3")]);
+  items.push([tt.ok === tt.all ? "yes" : "", `Cas testés : <b>${tt.ok} / ${tt.all}</b>` + (tt.ok < tt.all ? " (teste chaque cas proposé sous les exercices : c'est comme ça qu'on trouve les erreurs)" : "")]);
+  const qs = Object.keys(QUIZ).map(quizStats);
+  const qa = qs.reduce((n, s) => n + s.answered, 0), qt = qs.reduce((n, s) => n + s.total, 0), qc = qs.reduce((n, s) => n + s.correct, 0);
+  items.push([qa === qt ? "yes" : "", qa === qt ? `Prédictions True / False : <b>${qc} / ${qt}</b> justes` : `Prédictions True / False : ${qa} / ${qt} répondues (parties 1 et 2)`]);
+  const nOrdre = (S.notes["ordre-elif"] || "").trim();
+  items.push([nOrdre ? "yes" : "", nOrdre ? "Expérience sur l'ordre des <code>elif</code> : écrite" : "Expérience sur l'ordre des <code>elif</code> (partie 2) : pas encore écrite"]);
+  const dDone = exercises("d").filter(exDone).length;
+  if (dDone) items.push(["opt", `Défis réussis : <b>${dDone} / ${exercises("d").length}</b>`]);
+  const bil = (S.notes.bilan || "").trim();
+  items.push([bil ? "yes" : "", bil ? "Bilan : écrit" : "Bilan : à écrire ci-dessous"]);
+  ul.innerHTML = items.map(([c, t]) => `<li class="${c}">${t}</li>`).join("");
+}
+$("textarea[data-note=bilan]").addEventListener("input", () => { if (S.tab === "rendu") renderChecklist(); });
+
+/* =========================================================== PDF */
+function pdfSafe(s){
+  return String(s ?? "")
+    .replace(/\t/g, "    ")
+    .replace(/[‘’‛]/g, "'").replace(/[“”]/g, '"')
+    .replace(/[–—]/g, "-").replace(/…/g, "...")
+    .replace(/→/g, "->").replace(/≥/g, ">=").replace(/≤/g, "<=").replace(/×/g, "x")
+    .replace(/œ/g, "oe").replace(/Œ/g, "OE").replace(/[✓✔]/g, "OK").replace(/[✗✘✕]/g, "X").replace(/★/g, "*")
+    .replace(/[  ]/g, " ")
+    .replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, "").replace(/[️‍]/g, "")
+    .replace(/[^\x00-\xFF]/g, "?");
+}
+function compactCode(code){
+  return code.split("\n").filter(l => !PLACEHOLDER.test(l.trim())).join("\n").replace(/\n{3,}/g, "\n\n").replace(/^\s*\n/, "").replace(/\s+$/, "");
+}
+function makePDF(){
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: "mm", format: "a4" });
+  const M = 16, W = 210 - 2 * M, BOTTOM = 297 - 16;
+  let y = M;
+  const need = h => { if (y + h > BOTTOM) { doc.addPage(); y = M; } };
+  const pt = s => s * 0.3528;
+  function text(t, o = {}){
+    const size = o.size || 10.5, lh = pt(size) * (o.lh || 1.4), ind = o.indent || 0;
+    doc.setFont(o.font || "helvetica", o.style || "normal"); doc.setFontSize(size);
+    doc.setTextColor(...(o.color || [29, 27, 22]));
+    const lines = doc.splitTextToSize(pdfSafe(t), (o.width || W) - ind);
+    for (const l of lines) { need(lh); doc.text(l, (o.x || M) + ind, y + lh * 0.75); y += lh; }
+    y += o.after ?? 1.2;
+  }
+  function code(t, o = {}){
+    const size = o.size || 8.6, lh = pt(size) * 1.32, cw = pt(size) * 0.6, per = Math.floor((W - 7) / cw);
+    const bg = o.bg || [242, 239, 231], fg = o.fg || [25, 25, 35];
+    doc.setFont("courier", "normal"); doc.setFontSize(size);
+    let lines = pdfSafe(t).replace(/\s+$/, "").split("\n");
+    if (o.max && lines.length > o.max) lines = lines.slice(0, o.max).concat(["... (" + (lines.length - o.max) + " lignes de plus)"]);
+    const chunks = [];
+    for (const l of lines) { if (!l.length) chunks.push(""); for (let i = 0; i < l.length; i += per) chunks.push(l.slice(i, i + per)); }
+    need(lh + 3 + (o.keep ? Math.min(chunks.length, 8) * lh : 0));
+    doc.setFillColor(...bg); doc.rect(M, y, W, 1.6, "F"); y += 1.6;
+    for (const ch of chunks) {
+      need(lh);
+      doc.setFillColor(...bg); doc.rect(M, y, W, lh + 0.05, "F");
+      doc.setTextColor(...fg); doc.text(ch, M + 3.5, y + lh * 0.76); y += lh;
+    }
+    doc.setFillColor(...bg); doc.rect(M, y, W, 1.6, "F"); y += 1.6 + (o.after ?? 2.5);
+  }
+  function rule(c = [220, 214, 200]){ need(3); doc.setDrawColor(...c); doc.setLineWidth(0.3); doc.line(M, y + 1, M + W, y + 1); y += 3.5; }
+  function heading(t, color = [37, 70, 214]){ need(16); y += 3; text(t, { size: 16, style: "bold", color, after: 1 }); rule(color); }
+
+  const fullName = (S.id.prenom.trim() + " " + S.id.nom.trim()).trim() || "Élève";
+  const now = new Date();
+  const N = k => (S.notes[k] || "").trim();
+
+  // En-tête
+  doc.setFillColor(29, 27, 22); doc.rect(0, 0, 210, 34, "F");
+  doc.setTextColor(246, 243, 236); doc.setFont("helvetica", "normal"); doc.setFontSize(9);
+  doc.text(pdfSafe("SNT · SECONDE · ESAAT ROUBAIX · SÉANCE 2"), M, 12);
+  doc.setFont("helvetica", "bold"); doc.setFontSize(20);
+  doc.text(pdfSafe("Le programme prend des décisions"), M, 22);
+  doc.setFont("helvetica", "normal"); doc.setFontSize(10);
+  doc.text(pdfSafe("Les conditions if, elif, else - mon travail"), M, 29);
+  y = 44;
+  text("Élève : " + fullName + (S.id.classe.trim() ? "    Classe : " + S.id.classe.trim() : ""), { size: 12, style: "bold" });
+  text("Document généré le " + now.toLocaleDateString("fr-FR") + " à " + now.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }), { size: 9.5, color: [91, 86, 72], after: 4 });
+
+  // Résumé
+  const ex1 = exercises("1"), ex2 = exercises("2"), ex3 = exercises("3"), exD = exercises("d");
+  const tt = testsTotals([...ex1, ...ex2, ...ex3]);
+  const qs = Object.keys(QUIZ).map(quizStats);
+  const qt = qs.reduce((n, s) => n + s.total, 0), qc = qs.reduce((n, s) => n + s.correct, 0), qf = qs.reduce((n, s) => n + s.first, 0), qa = qs.reduce((n, s) => n + s.answered, 0);
+  const sum = [
+    ["Partie 1 - Si... sinon", ex1.filter(exDone).length + " / " + ex1.length + " exercices testés sans erreur"],
+    ["Partie 2 - elif, and, or", ex2.filter(exDone).length + " / " + ex2.length + " exercices testés sans erreur"],
+    ["Partie 3 - Hasard et jeux", ex3.filter(exDone).length + " / " + ex3.length + " projets testés sans erreur"],
+    ["Défis", exD.filter(exDone).length + " / " + exD.length],
+    ["Cas testés", tt.ok + " / " + tt.all],
+    ["Prédictions True / False", qa ? qc + " / " + qt + " justes (" + qf + " au premier essai)" : "non faites"],
+  ];
+  doc.setFillColor(230, 234, 252); need(sum.length * 6.2 + 6); doc.roundedRect(M, y, W, sum.length * 6.2 + 4, 2, 2, "F"); y += 3;
+  for (const [k, v] of sum) {
+    doc.setFont("helvetica", "normal"); doc.setFontSize(10.5); doc.setTextColor(60, 60, 70); doc.text(pdfSafe(k), M + 4, y + 4.3);
+    doc.setFont("helvetica", "bold"); doc.setTextColor(29, 27, 22); doc.text(pdfSafe(v).slice(0, 70), M + 66, y + 4.3);
+    y += 6.2;
+  }
+  y += 5;
+
+  // Prédictions
+  if (qa) {
+    heading("Mes prédictions : True ou False ?", [29, 27, 22]);
+    for (const [id, q] of Object.entries(QUIZ)) {
+      text(q.title, { size: 10.5, style: "bold", after: 0.8 });
+      const ans = S.quiz[id] || {};
+      q.items.forEach((it, i) => {
+        const a = ans[i];
+        const expr = (it.ctx ? "avec " + it.ctx + " :  " : "") + it.expr;
+        need(5.5);
+        doc.setFont("courier", "normal"); doc.setFontSize(9.5); doc.setTextColor(29, 27, 22);
+        doc.text(pdfSafe(expr).slice(0, 62), M + 3, y + 4);
+        let r, col;
+        if (!a) { r = "pas répondu"; col = [140, 134, 120]; }
+        else { const good = a.v === it.ans; r = (a.v ? "True" : "False") + (good ? "  juste" : "  faux") + (a.first ? "" : " (au 2e essai)"); col = good ? (a.first ? [47, 143, 91] : [165, 96, 27]) : [200, 64, 47]; }
+        doc.setFont("helvetica", "bold"); doc.setFontSize(9.5); doc.setTextColor(...col);
+        doc.text(pdfSafe(r), M + W, y + 4, { align: "right" });
+        y += 5.5;
+      });
+      y += 2.5;
+    }
+  }
+
+  // Réponses aux questions hors exercices
+  const free = $$("textarea[data-note]").filter(t => !t.closest("article.ex") && t.dataset.note !== "bilan" && N(t.dataset.note));
+  if (free.length) {
+    heading("Mes réponses", [29, 27, 22]);
+    free.forEach(t => {
+      text(t.closest("label").querySelector("span").innerText, { size: 10, style: "bold", after: 0.5 });
+      text(N(t.dataset.note), { size: 10.5, indent: 3, after: 3 });
+    });
+  }
+
+  function exBlock(art){
+    const c = CELLS[art.dataset.ex], st = c.st;
+    const lvl = { g: "Découverte", o: "Application", r: "Défi" }[art.dataset.level];
+    need(26);
+    text(art.dataset.title, { size: 12, style: "bold", after: 0.3 });
+    let status;
+    if (!exTouched(art)) status = "Non fait";
+    else if (st.runs > 0 && st.stale) status = "Code modifié après le dernier essai";
+    else if (st.status === "ok" && hasOut(st)) status = "Testé sans erreur";
+    else if (st.status === "ok") status = "Exécuté, mais rien ne s'affiche";
+    else if (st.status === "err") status = "Dernier essai avec une erreur";
+    else if (st.status === "stop") status = "Exécution arrêtée";
+    else status = "Code écrit mais jamais exécuté";
+    const col = status === "Testé sans erreur" ? [47, 143, 91] : status === "Non fait" ? [140, 134, 120] : [200, 64, 47];
+    text(lvl + " · " + status, { size: 9.5, style: "bold", color: col, after: 1.2 });
+    const consigne = art.querySelector(".consigne").innerText.replace(/\s*\n\s*/g, " ").trim();
+    text(consigne.length > 480 ? consigne.slice(0, 477) + "..." : consigne, { size: 9, color: [91, 86, 72], after: 2 });
+    if (c.tests.length) {
+      const t = testsOf(c);
+      text("Cas testés (" + t.filter(x => x.ok).length + " / " + t.length + ") : " + t.map(x => "« " + x.t + " » " + (x.ok ? "OK" : "non testé")).join("   "), { size: 9.5, style: "bold", color: t.every(x => x.ok) ? [47, 143, 91] : [165, 96, 27], after: 1.5 });
+    }
+    $$("textarea[data-note]", art).forEach(t => {
+      const v = N(t.dataset.note); if (!v) return;
+      text(t.closest("label").querySelector("span").innerText, { size: 9.5, style: "bold", after: 0.3 });
+      text(v, { size: 10, indent: 3, after: 1.5 });
+    });
+    if (!exTouched(art)) { y += 2; return; }
+    text("Mon code :", { size: 9.5, style: "bold", after: 0.8 });
+    code(st.code.trim() ? compactCode(st.code) : "(vide)");
+    const hist = st.hist.slice(0, 4).reverse();
+    if (hist.length) {
+      text(st.hist.length > 4 ? "Mes 4 derniers essais :" : "Mes essais :", { size: 9.5, style: "bold", after: 0.8 });
+      const total = st.hist.length;
+      hist.forEach((h, i) => {
+        const n = total - (hist.length - 1 - i);
+        const lab = "Essai " + n + " · " + hhmm(h.at) + (h.status === "ok" ? "" : " · erreur") + (h.inputs && h.inputs.length ? " · réponses tapées : " + h.inputs.map(v => "« " + v + " »").join(", ") : "");
+        text(lab, { size: 8.5, color: h.status === "ok" ? [91, 86, 72] : [200, 64, 47], after: 0.4 });
+        code(h.segs.map(([k, t]) => t).join(""), { max: 14, size: 8.2, bg: [33, 35, 50], fg: [233, 231, 242], after: 1.8, keep: true });
+      });
+    }
+    y += 2.5;
+  }
+
+  doc.addPage(); y = M;
+  heading("Partie 1 — Si... alors... sinon");
+  ex1.forEach(exBlock);
+  heading("Partie 2 — Plusieurs cas : elif, and, or");
+  ex2.forEach(exBlock);
+  heading("Partie 3 — Hasard et mini-jeux");
+  ex3.forEach(exBlock);
+  if (exD.some(exTouched)) {
+    heading("Défis — Pour aller plus loin", [180, 86, 29]);
+    exD.forEach(a => { if (exTouched(a)) exBlock(a); });
+    const notDone = exD.filter(a => !exTouched(a)).map(a => a.dataset.title.split(" — ")[0]);
+    if (notDone.length) text("Non faits : " + notDone.join(", "), { size: 9.5, color: [140, 134, 120] });
+  }
+
+  heading("Mon bilan");
+  text(N("bilan") || "(pas de bilan écrit)", { size: 10.5, style: N("bilan") ? "normal" : "italic" });
+
+  const pages = doc.getNumberOfPages();
+  for (let i = 1; i <= pages; i++) {
+    doc.setPage(i);
+    doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(140, 134, 120);
+    doc.text(pdfSafe(fullName + (S.id.classe ? " · " + S.id.classe : "") + " · SNT · Séance 2 · Les conditions"), M, 297 - 8);
+    doc.text("page " + i + " / " + pages, 210 - M, 297 - 8, { align: "right" });
+  }
+  doc.save("SNT_Conditions_" + (slug(S.id.nom) || "eleve") + "_" + (slug(S.id.prenom) || "") + ".pdf");
+}
+$("#btn-pdf").addEventListener("click", () => {
+  const msg = $("#pdf-msg");
+  if (!S.id.nom.trim() || !S.id.prenom.trim()) {
+    msg.className = "msg bad"; msg.textContent = "Écris d'abord ton nom et ton prénom (onglet « Commencer »).";
+    return;
+  }
+  if (!window.jspdf) {
+    msg.className = "msg bad"; msg.textContent = "Le module PDF n'a pas pu se charger : la fenêtre d'impression va s'ouvrir, choisis « Enregistrer au format PDF ».";
+    setTimeout(() => window.print(), 600); return;
+  }
+  msg.className = "msg"; msg.style.color = "var(--ink2)"; msg.textContent = "Création du PDF…";
+  setTimeout(() => {
+    try { makePDF(); msg.style.color = "var(--ok)"; msg.textContent = "✓ PDF téléchargé. Dépose-le sur l'ENT !"; }
+    catch (e) { console.error(e); msg.className = "msg bad"; msg.style.color = ""; msg.textContent = "Erreur pendant la création du PDF : " + e.message; }
+  }, 30);
+});
+
+/* =========================================================== SAUVEGARDE FICHIER */
+$("#btn-export").addEventListener("click", () => {
+  save(true);
+  const blob = new Blob([JSON.stringify(S)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "sauvegarde_SNT_Conditions_" + (slug(S.id.nom) || "eleve") + ".json";
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+});
+$("#btn-import").addEventListener("change", async e => {
+  const f = e.target.files[0]; if (!f) return;
+  try {
+    const data = JSON.parse(await f.text());
+    if (!data || !data.cells || !data.id) throw new Error("format");
+    if (!confirm("Remplacer le travail actuel de ce navigateur par cette sauvegarde ?")) return;
+    S = Object.assign(blank(), data); save(true); location.reload();
+  } catch (err) { $("#save-msg").className = "msg bad"; $("#save-msg").textContent = "Ce fichier n'est pas une sauvegarde valide."; }
+});
+$("#btn-reset").addEventListener("click", () => {
+  if (!confirm("Effacer TOUT ton travail (code, essais, réponses) ? C'est définitif.")) return;
+  try { localStorage.removeItem(KEY); } catch(e) {}
+  S = blank(); location.reload();
+});
+
+/* =========================================================== DÉMARRAGE */
+$$(".cell").forEach(makeCell);
+Object.values(CELLS).forEach(updateState);
+updateBadges();
+if (S.tab && $("#p-" + S.tab)) showTab(S.tab);
+ensurePy().catch(() => {});
+</script>
+</body>
+</html>
